@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>TownSuite Municipal Software</Authors>
+    <Company>ProCom Data Service Inc.</Company>
+    <Product>TownSuite Web Services</Product>
+    <Description>Common Data Trasfer objects for TownSuite Web services</Description>
+    <Copyright>ProCom Data Service Inc @2020</Copyright>
+  </PropertyGroup>
+
+</Project>
