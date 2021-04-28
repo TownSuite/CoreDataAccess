@@ -18,13 +18,15 @@ namespace TownSuite.CoreWebAPI
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            _appDbConnections = Configuration.GetSection("AppDbConnections").Get<List<AppDbConnectionVM>>();                       
+            //Direct read the section then we have to write a tenant resolver class before get this section
+            _appDbConnections = Configuration.GetSection("AppDbConnections").Get<List<AppDbConnectionVM>>();   
+            
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {           
-            services.Configure<List<AppDbConnectionVM>>(Configuration.GetSection("AppTenantConfig"));
+            //ervices.Configure<List<AppDbConnectionVM>>(Configuration.GetSection("AppTenantConfig"));
             services.AddControllers();
             services.AddScoped<IUserRepository>(c=>new UserRepository());
             services.AddScoped<IUserService>(c => new UserService(new UserRepository(), _appDbConnections));
