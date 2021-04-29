@@ -47,7 +47,7 @@ namespace TownSuite.CoreWebAPI.Service
             using (TSDalSession dalSession = new TSDalSession(_appDbConnections, true, transactionEnableTenants))
             {
                 var resultWeb = await _userRepository.InsertNewUserWebAsync(user, dalSession.UnitOfWork);
-                var resultFinancial = await _userRepository.InsertNewUserFinancialAsync(user, dalSession.UnitOfWork);
+                //var resultFinancial = await _userRepository.InsertNewUserFinancialAsync(user, dalSession.UnitOfWork);
                 dalSession.UnitOfWork.Commit();
             }
             return user;

@@ -7,6 +7,6 @@ namespace TownSuite.CoreDTOs.DataAccess
     public class AppDbTenant
     {
         public string TenantId { get; set; }
-        public IEnumerable<AppDbConnectionVM> AppDbConnectionVMs { get; set; }
+        public IEnumerable<AppDbConnectionVM> AppDbConnections { get; set; }
     }
 }

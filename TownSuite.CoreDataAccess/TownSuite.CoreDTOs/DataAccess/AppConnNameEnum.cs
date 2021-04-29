@@ -9,7 +9,7 @@ namespace TownSuite.CoreDTOs.DataAccess
         Web,
         Financial,
         Planning,
-        Mapping,
+        Mapping,       
         Other
     }
 }
