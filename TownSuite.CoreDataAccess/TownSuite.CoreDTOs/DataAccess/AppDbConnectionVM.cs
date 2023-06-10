@@ -9,6 +9,8 @@ namespace TownSuite.CoreDTOs.DataAccess
         public string ConnectionString { get; set; }
         public string ConnectionName { get; set; }
         public int ConnectionId { get; set; }
+
+        public string DbType { get; set; } = "sqlserver";
         //ConnectionId sould map to AppDbNameEnum value
     }
 }

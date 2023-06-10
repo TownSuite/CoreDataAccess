@@ -82,13 +82,8 @@ namespace TownSuite.CoreDataAccess
         {
             foreach (AppConnTenant tenant in TSAppTenant)
             {            
-                if (tenant.Transaction != null )  tenant.Transaction.Dispose();
-                if (tenant.Connection != null && tenant.Connection.State == ConnectionState.Open)
-                {
-                    tenant.Connection.Close();
-                    tenant.Connection.Dispose();  
-                }
-                                 
+                tenant?.Transaction?.Dispose();
+                tenant?.Connection?.Dispose();
             }
         }
     }
