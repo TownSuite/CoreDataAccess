@@ -10,7 +10,7 @@ namespace TownSuite.CoreDataAccess
 {
     public abstract class BaseRepository
     {
-        private IUnitOfWork _unitOfWork = null;
+        private IUnitOfWork _unitOfWork;
 
         public BaseRepository(IUnitOfWork unitOfWork = null)
         {
@@ -28,11 +28,11 @@ namespace TownSuite.CoreDataAccess
             AppConnTenant appConnTenant = null;
             try
             {
-                foreach (AppConnTenant appTenant in _unitOfWork.TSAppTenant)
+                foreach (AppConnTenant item in _unitOfWork.TSAppTenant)
                 {
-                    if (appTenant.Name.Equals(appConnectionName))
+                    if (item.Name.Equals(appConnectionName))
                     {
-                        appConnTenant = appTenant;
+                        appConnTenant = item;
                     }
                 }
                 return sqlTransaction(appConnTenant.Connection);
@@ -46,22 +46,23 @@ namespace TownSuite.CoreDataAccess
         protected async Task<T> WithConnectionAsync<T>(Func<IDbConnection, Task<T>> sqlTransaction, IUnitOfWork unitOfWork, AppConnNameEnum appConnectionName)
         {
             _unitOfWork = unitOfWork ?? _unitOfWork;
-            AppConnTenant connectedAppTenant = null;
+            AppConnTenant appConnTenant = null;
             try
             {
-                foreach (AppConnTenant appTenant in _unitOfWork.TSAppTenant)
+                foreach (AppConnTenant item in _unitOfWork.TSAppTenant)
                 {
-                    if (appTenant.Name.Equals(appConnectionName))
+                    if (item.Name.Equals(appConnectionName))
                     {
-                        connectedAppTenant = appTenant;
+                        appConnTenant = item;
                     }
                 }
-                return await sqlTransaction(connectedAppTenant.Connection);
+                return await sqlTransaction(appConnTenant.Connection);
             }
-            catch (TimeoutException ex)
+            catch (TimeoutException innerException)
             {
-                throw new Exception($"{GetType().FullName}.WithConnection() experienced a SQL timeout", ex);
+                throw new Exception($"{GetType().FullName}.WithConnection() experienced a SQL timeout", innerException);
             }
         }
     }
+
 }

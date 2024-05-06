@@ -12,7 +12,7 @@ namespace TownSuite.CoreDataAccess
 {
     public sealed class TSDalSession : IDisposable
     {
-        private readonly UnitOfWork _unitOfWork = null;
+        private readonly UnitOfWork _unitOfWork;
 
         private List<AppConnTenant> _appConnTenants;
 
@@ -36,7 +36,7 @@ namespace TownSuite.CoreDataAccess
             }
             else
             {
-                _unitOfWork.Dispose();
+                _unitOfWork?.Dispose();
             }
         }
 
@@ -45,9 +45,19 @@ namespace TownSuite.CoreDataAccess
             _appConnTenants = new List<AppConnTenant>();
             foreach (AppConnNameEnum appConnName in appConnNames)
             {
+                AppDbConnectionVM connString = GetConnString(appDbConnections, appConnName);
+                DbConnection connection = null;
+                if (string.Equals(connString?.DbType, "postgresql", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    connection = new NpgsqlConnection(connString.ConnectionString);
+                }
+                else
+                {
+                    connection = new SqlConnection(connString.ConnectionString);
+                }
                 AppConnTenant appConnTenant = new AppConnTenant
                 {
-                    Connection = new SqlConnection(GetConnString(appDbConnections, appConnName)),
+                    Connection = connection,
                     Transaction = null,
                     Name = appConnName
                 };
@@ -56,16 +66,17 @@ namespace TownSuite.CoreDataAccess
             }
         }
 
-        private string GetConnString(IEnumerable<AppDbConnectionVM> appDbConnections, AppConnNameEnum appConnName)
+        private AppDbConnectionVM GetConnString(IEnumerable<AppDbConnectionVM> appDbConnections, AppConnNameEnum appConnName)
         {
             foreach (AppDbConnectionVM appDbConnection in appDbConnections)
             {
-                if (appDbConnection.ConnectionId.Equals(appConnName))
+                if (((AppConnNameEnum)appDbConnection.ConnectionId).Equals(appConnName))
                 {
-                   return appDbConnection.ConnectionString;
+                    return appDbConnection;
                 }
             }
             return null;
         }
     }
+
 }

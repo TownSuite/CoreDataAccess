@@ -11,9 +11,9 @@ namespace TownSuite.CoreDataAccess
     {
         private Guid _id = Guid.Empty;
 
-        private bool _transactionCommitStatus = false;
+        private bool _transactionCommitStatus;
 
-        private bool _enableTransaction = false;
+        private bool _enableTransaction;
 
         private IEnumerable<AppConnTenant> _appConnTenants;
 
@@ -31,11 +31,11 @@ namespace TownSuite.CoreDataAccess
         public IDbTransaction Transaction(AppConnNameEnum appConnName)
         {
             IDbTransaction result = null;
-            foreach (AppConnTenant appTenant in TSAppTenant)
+            foreach (AppConnTenant item in TSAppTenant)
             {
-                if (appTenant.Name.Equals(appConnName))
+                if (item.Name.Equals(appConnName))
                 {
-                    result = appTenant.Transaction;
+                    result = item.Transaction;
                 }
             }
             return result;
@@ -62,11 +62,11 @@ namespace TownSuite.CoreDataAccess
             }
             foreach (AppConnNameEnum appConnName in appConnNames)
             {
-                foreach (AppConnTenant tenant in TSAppTenant)
+                foreach (AppConnTenant item in TSAppTenant)
                 {
-                    if (tenant.Name.Equals(appConnName))
+                    if (item.Name.Equals(appConnName))
                     {
-                        tenant.Transaction = tenant.Connection.BeginTransaction();
+                        item.Transaction = item.Connection.BeginTransaction();
                     }
                 }
             }
@@ -104,16 +104,10 @@ namespace TownSuite.CoreDataAccess
         {
             foreach (AppConnTenant item in TSAppTenant)
             {
-                if (item.Transaction != null)
-                {
-                    item.Transaction.Dispose();
-                }
-                if (item.Connection != null && item.Connection.State == ConnectionState.Open)
-                {
-                    item.Connection.Close();
-                    item.Connection.Dispose();
-                }
+                item?.Transaction?.Dispose();
+                item?.Connection?.Dispose();
             }
         }
     }
+
 }
