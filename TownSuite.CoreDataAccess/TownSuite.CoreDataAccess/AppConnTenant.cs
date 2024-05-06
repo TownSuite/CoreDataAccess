@@ -9,9 +9,8 @@ namespace TownSuite.CoreDataAccess
 {
     public class AppConnTenant
     {
-        public DbConnection Connection { get; set; }
-        public DbTransaction Transaction { get; set; }
+        public IDbConnection Connection { get; set; }
+        public IDbTransaction Transaction { get; set; }
         public AppConnNameEnum Name { get; set; }
-
     }
 }

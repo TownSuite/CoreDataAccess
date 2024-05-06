@@ -13,57 +13,58 @@ namespace TownSuite.CoreDataAccess
     public sealed class TSDalSession : IDisposable
     {
         private readonly UnitOfWork _unitOfWork = null;
+
         private List<AppConnTenant> _appConnTenants;
 
-        public TSDalSession(IEnumerable<AppDbConnectionVM> appDbConnections, bool autoBeginTransaction = false,
-            IEnumerable<AppConnNameEnum> transactonEnableTenants = null)
+        public UnitOfWork UnitOfWork => _unitOfWork;
+
+        public TSDalSession(IEnumerable<AppDbConnectionVM> appDbConnections, bool autoBeginTransaction = false, IEnumerable<AppConnNameEnum> transactonEnableTenants = null)
         {
             OpenConnections(transactonEnableTenants, appDbConnections);
-            _unitOfWork = new UnitOfWork(_appConnTenants, true);
-            if (autoBeginTransaction) _unitOfWork.Begin(transactonEnableTenants);
-        }
-
-        public UnitOfWork UnitOfWork
-        {
-            get { return _unitOfWork; }
+            _unitOfWork = new UnitOfWork(_appConnTenants, enableTransaction: true);
+            if (autoBeginTransaction)
+            {
+                _unitOfWork.Begin(transactonEnableTenants);
+            }
         }
 
         public void Dispose()
         {
-            if (_unitOfWork != null) _unitOfWork.Rollback();
-            else _unitOfWork?.Dispose();
+            if (_unitOfWork != null)
+            {
+                _unitOfWork.Rollback();
+            }
+            else
+            {
+                _unitOfWork.Dispose();
+            }
         }
 
-        private void OpenConnections(IEnumerable<AppConnNameEnum> appConnNames,
-            IEnumerable<AppDbConnectionVM> appDbConnections)
+        private void OpenConnections(IEnumerable<AppConnNameEnum> appConnNames, IEnumerable<AppDbConnectionVM> appDbConnections)
         {
             _appConnTenants = new List<AppConnTenant>();
-            foreach (AppConnNameEnum eachConnection in appConnNames)
+            foreach (AppConnNameEnum appConnName in appConnNames)
             {
-                var connInfo = GetConnString(appDbConnections, eachConnection);
-                AppConnTenant appConnTenant = new AppConnTenant()
+                AppConnTenant appConnTenant = new AppConnTenant
                 {
-                    Connection =
-                        string.Equals(connInfo?.DbType, "postgresql", StringComparison.InvariantCultureIgnoreCase)
-                            ? new NpgsqlConnection(connInfo.ConnectionString) as DbConnection
-                            : new SqlConnection(connInfo.ConnectionString) as DbConnection,
+                    Connection = new SqlConnection(GetConnString(appDbConnections, appConnName)),
                     Transaction = null,
-                    Name = eachConnection
+                    Name = appConnName
                 };
                 appConnTenant.Connection.Open();
                 _appConnTenants.Add(appConnTenant);
             }
         }
 
-        private AppDbConnectionVM GetConnString(IEnumerable<AppDbConnectionVM> appDbConnections,
-            AppConnNameEnum appConnName)
+        private string GetConnString(IEnumerable<AppDbConnectionVM> appDbConnections, AppConnNameEnum appConnName)
         {
             foreach (AppDbConnectionVM appDbConnection in appDbConnections)
             {
-                if (((AppConnNameEnum)appDbConnection.ConnectionId).Equals(appConnName))
-                    return appDbConnection;
+                if (appDbConnection.ConnectionId.Equals(appConnName))
+                {
+                   return appDbConnection.ConnectionString;
+                }
             }
-
             return null;
         }
     }

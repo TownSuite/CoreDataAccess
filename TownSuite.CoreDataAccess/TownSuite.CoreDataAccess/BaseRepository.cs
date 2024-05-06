@@ -10,7 +10,7 @@ namespace TownSuite.CoreDataAccess
 {
     public abstract class BaseRepository
     {
-        IUnitOfWork _unitOfWork = null;
+        private IUnitOfWork _unitOfWork = null;
 
         public BaseRepository(IUnitOfWork unitOfWork = null)
         {
@@ -25,19 +25,21 @@ namespace TownSuite.CoreDataAccess
         protected T WithConnection<T>(Func<IDbConnection, T> sqlTransaction, IUnitOfWork unitOfWork, AppConnNameEnum appConnectionName)
         {
             _unitOfWork = unitOfWork ?? _unitOfWork;
-            AppConnTenant connectedAppTenant = null;
+            AppConnTenant appConnTenant = null;
             try
             {
-                foreach(AppConnTenant appTenant in _unitOfWork.TSAppTenant)
+                foreach (AppConnTenant appTenant in _unitOfWork.TSAppTenant)
                 {
                     if (appTenant.Name.Equals(appConnectionName))
-                        connectedAppTenant = appTenant;
+                    {
+                        appConnTenant = appTenant;
+                    }
                 }
-                return sqlTransaction(connectedAppTenant.Connection);
+                return sqlTransaction(appConnTenant.Connection);
             }
-            catch (TimeoutException ex)
+            catch (TimeoutException innerException)
             {
-                throw new Exception(String.Format("{0}.WithConnection() experienced a SQL timeout", GetType().FullName), ex);
+                throw new Exception($"{GetType().FullName}.WithConnection() experienced a SQL timeout", innerException);
             }
         }
 
@@ -50,15 +52,16 @@ namespace TownSuite.CoreDataAccess
                 foreach (AppConnTenant appTenant in _unitOfWork.TSAppTenant)
                 {
                     if (appTenant.Name.Equals(appConnectionName))
+                    {
                         connectedAppTenant = appTenant;
+                    }
                 }
                 return await sqlTransaction(connectedAppTenant.Connection);
             }
             catch (TimeoutException ex)
             {
-                throw new Exception(String.Format("{0}.WithConnection() experienced a SQL timeout", GetType().FullName), ex);
+                throw new Exception($"{GetType().FullName}.WithConnection() experienced a SQL timeout", ex);
             }
         }
-
     }
 }

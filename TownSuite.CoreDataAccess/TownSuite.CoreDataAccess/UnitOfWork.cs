@@ -7,59 +7,79 @@ using TownSuite.CoreDTOs.DataAccess;
 
 namespace TownSuite.CoreDataAccess
 {
-    public sealed class UnitOfWork : IUnitOfWork
+    public sealed class UnitOfWork : IUnitOfWork, IDisposable
     {
-        Guid _id = Guid.Empty;
+        private Guid _id = Guid.Empty;
+
         private bool _transactionCommitStatus = false;
+
         private bool _enableTransaction = false;
+
         private IEnumerable<AppConnTenant> _appConnTenants;
-    
-        internal UnitOfWork(IEnumerable<AppConnTenant> appConnTenants, bool enableTransaction=false)
+
+        public IEnumerable<AppConnTenant> TSAppTenant => _appConnTenants;
+
+        Guid IUnitOfWork.Id => _id;
+
+        internal UnitOfWork(IEnumerable<AppConnTenant> appConnTenants, bool enableTransaction = false)
         {
             _id = Guid.NewGuid();
             _appConnTenants = appConnTenants;
-            _enableTransaction = enableTransaction; 
-        }       
-
-        public IEnumerable<AppConnTenant> TSAppTenant { get { return _appConnTenants; } }
+            _enableTransaction = enableTransaction;
+        }
 
         public IDbTransaction Transaction(AppConnNameEnum appConnName)
         {
-            IDbTransaction dbTransaction = null;
-
-            foreach(AppConnTenant appTenant in TSAppTenant)
+            IDbTransaction result = null;
+            foreach (AppConnTenant appTenant in TSAppTenant)
             {
-               if (appTenant.Name.Equals(appConnName))
-                    dbTransaction =  appTenant.Transaction;
+                if (appTenant.Name.Equals(appConnName))
+                {
+                    result = appTenant.Transaction;
+                }
             }
-            return dbTransaction;
+            return result;
         }
 
-        Guid IUnitOfWork.Id
+        public IDbConnection Connection(AppConnNameEnum appConnName)
         {
-            get { return _id; }
+            IDbConnection result = null;
+            foreach (AppConnTenant appTenant in TSAppTenant)
+            {
+                if (appTenant.Name.Equals(appConnName))
+                {
+                    result = appTenant.Connection;
+                }
+            }
+            return result;
         }
-
 
         public void Begin(IEnumerable<AppConnNameEnum> appConnNames)
         {
-            if (_enableTransaction)
-            foreach (AppConnNameEnum eachTenantName in appConnNames)
+            if (!_enableTransaction)
+            {
+                return;
+            }
+            foreach (AppConnNameEnum appConnName in appConnNames)
             {
                 foreach (AppConnTenant tenant in TSAppTenant)
                 {
-                    if (tenant.Name.Equals(eachTenantName))
-                          tenant.Transaction =  tenant.Connection.BeginTransaction();
+                    if (tenant.Name.Equals(appConnName))
+                    {
+                        tenant.Transaction = tenant.Connection.BeginTransaction();
+                    }
                 }
             }
         }
 
         public void Commit()
         {
-            foreach(AppConnTenant tenant in TSAppTenant)
+            foreach (AppConnTenant item in TSAppTenant)
             {
-                if (tenant.Transaction != null)  
-                    tenant.Transaction.Commit();                                   
+                if (item.Transaction != null)
+                {
+                    item.Transaction.Commit();
+                }
             }
             _transactionCommitStatus = true;
             Dispose();
@@ -69,10 +89,12 @@ namespace TownSuite.CoreDataAccess
         {
             if (!_transactionCommitStatus)
             {
-                foreach (AppConnTenant tenant in TSAppTenant)
+                foreach (AppConnTenant item in TSAppTenant)
                 {
-                    if (tenant.Transaction != null)
-                        tenant.Transaction.Rollback();
+                    if (item.Transaction != null)
+                    {
+                        item.Transaction.Rollback();
+                    }
                 }
             }
             Dispose();
@@ -80,10 +102,17 @@ namespace TownSuite.CoreDataAccess
 
         public void Dispose()
         {
-            foreach (AppConnTenant tenant in TSAppTenant)
-            {            
-                tenant?.Transaction?.Dispose();
-                tenant?.Connection?.Dispose();
+            foreach (AppConnTenant item in TSAppTenant)
+            {
+                if (item.Transaction != null)
+                {
+                    item.Transaction.Dispose();
+                }
+                if (item.Connection != null && item.Connection.State == ConnectionState.Open)
+                {
+                    item.Connection.Close();
+                    item.Connection.Dispose();
+                }
             }
         }
     }

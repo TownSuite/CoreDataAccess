@@ -8,9 +8,10 @@ namespace TownSuite.CoreDataAccess.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
-        Guid Id { get; }    
+        Guid Id { get; }
         IEnumerable<AppConnTenant> TSAppTenant { get; }
         IDbTransaction Transaction(AppConnNameEnum appConnName);
+        IDbConnection Connection(AppConnNameEnum appConnName);
         void Begin(IEnumerable<AppConnNameEnum> appConnNames);
         void Commit();
         void Rollback();
