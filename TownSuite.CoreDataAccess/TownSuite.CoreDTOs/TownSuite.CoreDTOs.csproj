@@ -8,7 +8,7 @@
     <Product>TownSuite Web Services</Product>
     <Description>Common Data Trasfer objects for TownSuite Web services</Description>
     <Copyright>ProCom Data Service Inc @2020</Copyright>
-	<Version>1.1.2</Version>
+	<Version>1.2.2</Version>
   </PropertyGroup>
 
 </Project>
