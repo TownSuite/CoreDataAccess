@@ -128,7 +128,5 @@ namespace TownSuite.CoreDataAccess
                 item?.Connection?.Dispose();
             }
         }
-
     }
-
 }
