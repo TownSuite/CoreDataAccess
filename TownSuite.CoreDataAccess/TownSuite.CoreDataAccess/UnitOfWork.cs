@@ -100,6 +100,26 @@ namespace TownSuite.CoreDataAccess
             Dispose();
         }
 
+        /// <summary>
+        /// Used to help the transition to TownSuite.Data.SqlClient
+        /// </summary>
+        /// <param name="connName"></param>
+        /// <returns></returns>
+        public TownSuite.Data.SqlClient.SqlConnection TownSuiteDataConnection(AppConnNameEnum connName)
+        {
+            return (TownSuite.Data.SqlClient.SqlConnection)Connection(connName);
+        }
+
+        /// <summary>
+        /// Used to help the transition to TownSuite.Data.SqlClient
+        /// </summary>
+        /// <param name="connName"></param>
+        /// <returns></returns>
+        public TownSuite.Data.SqlClient.SqlTransaction TownSuiteDataTransaction(AppConnNameEnum connName)
+        {
+            return (TownSuite.Data.SqlClient.SqlTransaction)Transaction(connName);
+        }
+
         public void Dispose()
         {
             foreach (AppConnTenant item in TSAppTenant)
@@ -108,6 +128,7 @@ namespace TownSuite.CoreDataAccess
                 item?.Connection?.Dispose();
             }
         }
+
     }
 
 }
