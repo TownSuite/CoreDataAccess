@@ -12,6 +12,10 @@ namespace TownSuite.CoreDataAccess
 {
     public sealed class TSDalSession : IDisposable
     {
+        public const string POSTGRES_DBTYPE = "postgresql";
+        public const string SQLSERVER_DBTYPE = "sqlserver";
+        public const string TOWNSUITE_SQLSERVER_DBTYPE = "townsuite_sqlserver";
+
         private readonly UnitOfWork _unitOfWork;
 
         private List<AppConnTenant> _appConnTenants;
@@ -47,9 +51,13 @@ namespace TownSuite.CoreDataAccess
             {
                 AppDbConnectionVM connString = GetConnString(appDbConnections, appConnName);
                 DbConnection connection = null;
-                if (string.Equals(connString?.DbType, "postgresql", StringComparison.InvariantCultureIgnoreCase))
+                if (string.Equals(connString?.DbType, POSTGRES_DBTYPE, StringComparison.InvariantCultureIgnoreCase))
                 {
                     connection = new NpgsqlConnection(connString.ConnectionString);
+                }
+                else if (string.Equals(connString?.DbType, TOWNSUITE_SQLSERVER_DBTYPE, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    connection = new TownSuite.Data.SqlClient.SqlConnection(connString.ConnectionString);
                 }
                 else
                 {
